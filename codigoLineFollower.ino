@@ -135,8 +135,8 @@ void funBotones()
 {
     if (digitalRead(Bot1) == LOW)
     {
-        analogWrite(PWMM1A, 0);
-        analogWrite(PWMM2A, 0);
+        analogWrite(PWMM1A, 255);
+        analogWrite(PWMM2A, 255);
         flag2 = true;
         delay(2000);
         if (digitalRead(Bot1) == LOW)
