@@ -171,7 +171,24 @@ void calibration()
 
 Aquí una de las funciones más importantes, la que se ocupa de la **calibración**, está enciende el ```LED13```, integrado en el arduino, para indicar que el auto está en proceso de calibración.
 
-Durante la calibración, se guardan los **valores máximos y mínimos** que toman los sensores para luego calcular correctamente el umbral. *Esto último está mal)*
+Durante la calibración, se guardan los **valores máximos y mínimos** que toman los sensores para luego calcular correctamente el umbral. *(Esto último está mal)*
 
 Al terminar de calibrar, apaga el ```LED13``` indicando que se terminó de calibrar. Y luego inicia la serial para mostrar en esta los valores mínimos y máximos que tomó cada sensor (función ```printCalibration```).
+
+## Funcionamiento continuo del auto (loop)
+
+```
+void loop()
+{
+    //Serial.print(flag);
+    //Serial.print(flag2);
+    funBotones();
+    readSensors();
+    controlMotors();
+    Serial.println();
+}
+```
+
+Una vez se terminó de calibrar el auto, empieza el loop, en el cual se está comprobando constantemente el estado de los botones, lee los sensores y controla los motores.
+
 
