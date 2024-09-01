@@ -2,7 +2,7 @@
 # Explicación "Código Marche"
 Así vemos lo que está bien y lo que está mal.
 
-### Declaración de pines y valores iniciales
+## Declaración de pines y valores iniciales
 
 ```
 #define LED13 13 // NO CAMBIA
@@ -55,7 +55,123 @@ E: \mathbb{R} \rightarrow [-3500, 3500] / y = E(t)
 
 Como pequeña aclaración, el dominio no seria todos los reales, ya que tenemos distintos saltos en el tiempo entre medición y medición, pero al calcular la integral del error es lo más cerca que podemos estar.
 
+```
+double mAVel = 0;
+double mBVel = 0;
+double motVel = 0;
+double Vel = 70; // Valor maximo para la velocidad del motor 
+double VelMin = 60; // Valor minimo para la velocidad del motor
+bool flag = false;
+bool flag2 = true;
+// Variables globales adicionales para el control PID
+unsigned long currentTime, previousTime = 0;
+double elapsedTime;
+double cumError = 0, rateError;
+double lastError = 0;
+```
 
+- ```mxVel``` es la velocidad del motor ‘X’.
+- ```motVel``` es la salida del PID
+- ```Vel``` es la velocidad máxima.
+- ```VelMin``` es la velocidad mínima.
+- Si ambas flags están en ```true```, el auto puede empezar a seguir la línea, estas se controlan con los botones.
+- ```currentTime```, ```previousTime``` y ```elapsedTime``` guardan lo que su nombre indica, usados en el cálculo de la integral.
+- ```cumError``` es la acumulación del error, es decir, la integral del error.
+- ```rateError``` es la tasa de cambio del error, es decir, la derivada del error.
+- ```lastError``` guarda el último valor del error.
 
+```
+// Parámetros del PID
+double Kp = 0.3;
+double Ki = 0.01;
+double Kd = 0.35;
+```
 
+Constantes usadas en el cálculo del PID, se calculan a prueba y error.
+
+## Funciones Iniciales (setup)
+
+### Configuración inicial
+
+```
+void setup()
+{
+    configureSensors();
+    configureMotor();
+    configureIO();
+    calibration();
+...
+}
+```
+
+Lo primero que hace el auto son estas funciones, que vamos a detallar ahora.
+
+```
+void configureSensors()
+{
+    qtr.setTypeAnalog();
+    qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
+}
+```
+
+La función ```configureSensors()``` lo que hace es inicializar el array de sensores , primero los setea como analógicos, luego configura los pines a los que están conectados los emisores de los fototransistores de los sensores.
+
+```
+void configureMotor()
+{
+    digitalWrite(PWMM2B, LOW);
+    digitalWrite(ENM1, HIGH);
+    digitalWrite(PWMM1B, LOW);
+    digitalWrite(ENM2, HIGH);
+    analogWrite(PWMM1A, 0);
+    analogWrite(PWMM2A, 0);
+}
+```
+
+```configureMotor``` setea los valores iniciales de los motores.
+
+```
+// Configura los pins de entrada/salida
+void configureIO()
+{
+    pinMode(LedOn, OUTPUT);
+    pinMode(Bot, INPUT_PULLUP);
+    pinMode(Bot1, INPUT_PULLUP);
+    pinMode(PWMM1A, OUTPUT);
+    pinMode(PWMM2A, OUTPUT);
+    pinMode(ENM1, OUTPUT);
+    pinMode(ENM2, OUTPUT);
+    pinMode(PWMM1B, OUTPUT);
+    pinMode(PWMM2B, OUTPUT);
+}
+```
+
+Esta función configura todos los pines usados como entradas o salidas.
+
+**ERROR**: Esta función es llamada luego de ponerle un valor a los motores, cuando debería ser al revés.
+
+### Calibración
+
+```
+void calibration()
+{
+    pinMode(LED13, OUTPUT);
+    digitalWrite(LED13, HIGH);
+
+    for (uint16_t i = 0; i < 150; i++)
+    {
+        qtr.calibrate();
+    }
+
+    digitalWrite(LED13, LOW);
+    Serial.begin(9600);
+    printCalibration();
+}
+```
+
+Aquí una de las funciones más importantes, la que se ocupa de la **calibración**, está enciende el ```LED13```, integrado en el arduino, para indicar que el auto está en proceso de calibración.
+
+Durante la calibración, se guardan los **valores máximos y mínimos** que toman los sensores para luego calcular correctamente el umbral. *Esto último está mal)*
+
+Al terminar de calibrar, apaga el ```LED13``` indicando que se terminó de calibrar. Y luego inicia la serial para mostrar en esta los valores mínimos y máximos que tomó cada sensor (función ```printCalibration```).
 
