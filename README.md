@@ -344,7 +344,7 @@ rateError = (error - lastError) / elapsedTime;
 
 ##### Término Integral
 
-Para entender bien este término, les recomiendo ver el siguiente video: Deducción de la fórmula de la integral del error
+Para entender bien este término, les recomiendo ver el siguiente video: [Deducción de la fórmula de la integral del error](https://www.youtube.com/watch?v=I08we04KKHY)
 
 Como antes, voy a tomar los puntos más importantes y trasladarlos acá.
 
@@ -385,3 +385,13 @@ Ahora tenemos que pasar esta fórmula a C++, por lo que es todo igual agregando 
 ```
 cumError += ((error + lastError) / 2) * elapsedTime
 ```
+
+## Contenido Útil
+
+[Libreria QTR Sensors](https://github.com/pololu/qtr-sensors-arduino)
+
+[VIDEO - Derivadas - El traductor de ingenieria](https://www.youtube.com/watch?v=_6-zwdrqD3U)
+
+[VIDEO - Integrales - El traductor de ingenieria](https://www.youtube.com/watch?v=Ec-cGjh0Fr0&t=886s)
+
+[VIDEO - PID Control - AerospaceControlsLab](https://www.youtube.com/watch?v=4Y7zG48uHRo)
