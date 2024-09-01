@@ -191,4 +191,60 @@ void loop()
 
 Una vez se terminó de calibrar el auto, empieza el loop, en el cual se está comprobando constantemente el estado de los botones, lee los sensores y controla los motores.
 
+#### Funcionamiento de los botones
+
+```
+void funBotones()
+```
+
+Es dificil explicar esta función línea por línea, pero lo que hace esta claro, trabaja con las banderas (```flag``` y ```flag2```) para controlar en que estado está el auto, si ambas son verdaderas, el auto puede empezar a funcionar, si no, tiene dos opciones.
+
+La primera es seguir parpadeando ```LedOn``` para indicar que se puede arrancar el auto, cuando se toca ```bot1``` por 1 segundo el auto puede empezar a andar.
+
+En el caso de ```bot```, si se mantiene apretado se ponen los motores al máximo.
+
+#### Lectura de Sensores
+
+```
+void readSensors()
+```
+
+La función ```readSensors``` calcula la posición y el error del auto, mediante la lectura de los sensores.
+
+```
+Serial.print("Sensores: ");
+    for (uint8_t i = 0; i < SensorCount; i++)
+    {
+      umbral = (qtr.calibrationOn.minimum[i] + qtr.calibrationOn.maximum[i]) / 2; //cambiar para que los calcule en la calibracion
+        if (sensorValues[i] <= umbral)
+        {
+            sensorValues[i] = 0;
+        }
+        else
+        {
+            sensorValues[i] = 1000;
+        }
+        Serial.print(sensorValues[i]); // lectura de sensores
+        Serial.print('\t');
+    }
+````
+
+**ERROR MUY GRAVE** los valores digitalizados nunca se usan, sino que cuando se llama a ‘readLineBlack’ se leen de vuelta los valores y los almacena en el array de sensorValues.
+
+El último pedazo de código mostrado está al re pedo, como mucho puede servir para depurar pero todos los datos de la calibración no los usamos en ningún momento.
+
+No es que va a modificar el funcionamiento, pero la librería ya hace automáticamente la lectura de la línea.
+
+```
+uint16_t position = qtr.readLineBlack(sensorValues);
+error = position - 3500;
+```
+
+Como expliqué antes, esta función lee los valores de los sensores y calcula la posición de la línea, la cual va a ser un valor entre 0 y 7000. (Si el auto está en el primer sensor, va a retornar 0, y si está en el último 7000).
+
+El error se calcula de esa manera ya que el centro de la línea sería 3500, si el error es positivo significa que está por encima de la línea, y si es negativo por debajo.
+
+
+
+
 
