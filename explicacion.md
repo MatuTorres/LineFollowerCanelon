@@ -364,4 +364,24 @@ En el caso del seguidor de línea, no tenemos la situación límite de poder div
 A = \sum_{i=0}^n E(t_i) · \Delta t
 ```
 
-Para pasarlo a código, podemos decir que $`A`$ es ```cumError```, $`\sum_{i=0}^n`" es ```+=``` ya que en la variable ya van a estar sumada toda el área anterior, $`E(t_i)`$ es ```error``` y como antes, $`\Delta t`$ es ```elapsedTime```
+Para pasarlo a código, podemos decir que $`A`$ es ```cumError```, $`\sum_{i=0}^n`$ es ```+=``` ya que en la variable ya van a estar sumada toda el área anterior, $`E(t_i)`$ es ```error``` y como antes, $`\Delta t`$ es ```elapsedTime```, por lo que en el código vamos a escribir
+
+```
+cumError += error * elapsedTime;
+```
+
+Esta aproximación del área está bien, y debería funcionar, pero se podría hacer una mejor aproximación si en vez de dividir nuestro área en rectángulos la dividimos en trapecios, como se ve en la imagen.
+
+![image](https://github.com/user-attachments/assets/c8944fef-fb97-492a-a64e-9436b8a1062a)
+
+Ahora, nuestra fórmula pasaría a ser calculada como el área del trapecio, y no del rectángulo, por lo que nuestra nueva suma de riemann quedaría algo así:
+
+```math
+A = \sum_{i=0}^n \frac{E(t_i) + E(t_{i-1})}{2} · \Delta t
+```
+
+Ahora tenemos que pasar esta fórmula a C++, por lo que es todo igual agregando que $`E(t_{i-1})`$ es ```lastError```, la línea de código nos quedaría así:
+
+```
+cumError += ((error - lastError) / 2) * elapsedTime
+```
