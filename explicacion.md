@@ -312,12 +312,15 @@ PID = K_p · P + K_i · \int_{0}^{t_i} E(t)dt + K_d · E'(t)
 
 Para empezar hay que ver que es cada termino.
 
+##### Término Proporcional
+
 En primer lugar tenemos el término **proporcional**, el cuál no es más que el error en sí, este término es **proporcional al error**, por lo que acá no hay ningún cálculo complejo.
 
 ```math
 P = E(t) = error
 ```
 
+##### Término Derivativo
 
 Luego tenemos el término derivativo, para el cual te recomiendo ver el siguiente video: [Deducción de la Fórmula de la Derivada del Error](https://www.youtube.com/watch?v=ZYGA-PqmQr4)
 
@@ -339,4 +342,26 @@ En el código, $`E'(t_i)`$ es ```rateError```, $`E(t_i - \Delta t)`$ es ```lastE
 rateError = (error - lastError) / elapsedTime;
 ```
 
+##### Término Integral
 
+Para entender bien este término, les recomiendo ver el siguiente video: Deducción de la fórmula de la integral del error
+
+Como antes, voy a tomar los puntos más importantes y trasladarlos acá.
+
+En primer lugar, tenemos que entender que nuestra fórmula va a salir de la **suma de riemann**, la cual es la siguiente:
+
+```math
+A = \lim_{n \to \infty} \sum_{i=0}^n f(x_i) · \Delta x
+```
+
+La suma de riemann lo que intenta hacer es calcular el área bajo la curva $`f`$, dividiendola en $`n`$ rectángulos de base $`\Delta x`$ y evaluando la función en el $`i`$ rectángulo para conocer su altura y asi conocer el área de cada rectángulo y sumarlas, teniendo infinitos rectángulos podemos conocer el área exacta.
+
+![image](https://github.com/user-attachments/assets/3d4c6af3-37bd-410a-bfd7-e4b8c76b3a71)
+
+En el caso del seguidor de línea, no tenemos la situación límite de poder dividir nuestra función del error en infinitos rectángulos, por lo que nos va a quedar algo así:
+
+```math
+A = \sum_{i=0}^n E(t_i) · \Delta t
+```
+
+Para pasarlo a código, podemos decir que $`A`$ es ```cumError```, $`\sum_{i=0}^n`" es ```+=``` ya que en la variable ya van a estar sumada toda el área anterior, $`E(t_i)`$ es ```error``` y como antes, $`\Delta t`$ es ```elapsedTime```
