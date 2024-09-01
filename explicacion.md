@@ -383,5 +383,5 @@ A = \sum_{i=0}^n \frac{E(t_i) + E(t_{i-1})}{2} · \Delta t
 Ahora tenemos que pasar esta fórmula a C++, por lo que es todo igual agregando que $`E(t_{i-1})`$ es ```lastError```, la línea de código nos quedaría así:
 
 ```
-cumError += ((error - lastError) / 2) * elapsedTime
+cumError += ((error + lastError) / 2) * elapsedTime
 ```
