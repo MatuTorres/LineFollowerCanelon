@@ -244,7 +244,72 @@ Como expliqué antes, esta función lee los valores de los sensores y calcula la
 
 El error se calcula de esa manera ya que el centro de la línea sería 3500, si el error es positivo significa que está por encima de la línea, y si es negativo por debajo.
 
+#### Control de Motores y Cálculo del PID
 
+```
+void controlMotors()
+```
 
+Esta función es la encargada de controlar los motores en función del error a través del sistema de control PID (Proportional-Integral-Derivative Control).
 
+```
+currentTime = millis(); // Obtener el tiempo actual
+    
+if (previousTime == 0) 
+{  // Si es la primera vez que se ejecuta la función
+  previousTime = currentTime;  // Actualizar previousTime
+  return;  // Salir de la función para evitar división por cero en elapsedTime
+}
 
+elapsedTime = (double)(currentTime - previousTime) / 1000; // Calcular el tiempo transcurrido desde el cálculo anterior en segundos
+```
+
+Lo primero que hace ```controlMotors``` es obtener el tiempo actual del auto con la función ```millis()``` integrada en *Arduino*
+
+Luego, si es la primera medición retorna la función para que en el cálculo de la derivada no se divida por cero.
+
+**Nota importante**: En el calculo de la derivada nunca se va a dividir por cero, ya que millis nunca va a devolver cero debido a que antes ya paso toda la calibración, pero no está de mas chequear.
+
+Luego calcula el tiempo que paso desde la última medición y lo guarda en ```elapsedTime```
+
+```
+cumError += error * elapsedTime;               // Calcular la integral del error
+rateError = (error - lastError) / elapsedTime; // Calcular la derivada del error
+  
+motVel = Kp * error + Ki * cumError + Kd * rateError; // Calcular la salida del PID
+````
+
+Esta es la parte del cálculo del PID, la cual voy a retomar mas adelante.
+
+```
+lastError = error;          // Recordar el error actual
+previousTime = currentTime; // Recordar el tiempo actual
+```
+
+En esta parte se guardan las distintas variables del PID para usarlas mas adelante al volver a calcularlo.
+
+```
+mAVel = Vel + motVel;
+mBVel = Vel - motVel;
+```
+
+```mxVel```, como dije antes es la velocidad que toma el motor *x*, ahora, a uno se le suma y a otro se le resta la salida del PID, esto es ya que si uno tiene que doblar tanto para doblar, la otra rueda va a tener que frenar ese tanto para doblar, y como ```motVel``` puede ser negativo, se pueden invertir los signos que se muestran ahi.
+
+Luego se llama a la funcion ```restrictMotorSpeed()``` que lo que hace es limitar la velocidad de los motores a valores seguros. **Nota**: A simple vista no parece tener problemas pero habría que pensar la lógica que toma esta función.
+
+```
+analogWrite(PWMM1B, mAVel);
+analogWrite(PWMM2B, mBVel + ajuste);
+```
+
+En estas dos líneas se le manda lo calculado a cada motor.
+
+#### Cálculo del PID
+
+Para empezar hay que ver que es cada termino.
+
+En primer lugar tenemos el término **proporcional**, el cuál no es más que el error en sí, este término es **proporcional al error**, por lo que acá no hay ningún cálculo complejo.
+
+```math
+P = E(t) = error
+```
