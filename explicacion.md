@@ -306,6 +306,10 @@ En estas dos líneas se le manda lo calculado a cada motor.
 
 #### Cálculo del PID
 
+```math
+PID = K_p · P + K_i · \int_{0}^{t_i} E(t)dt + K_d · E'(t)
+```
+
 Para empezar hay que ver que es cada termino.
 
 En primer lugar tenemos el término **proporcional**, el cuál no es más que el error en sí, este término es **proporcional al error**, por lo que acá no hay ningún cálculo complejo.
@@ -313,3 +317,26 @@ En primer lugar tenemos el término **proporcional**, el cuál no es más que el
 ```math
 P = E(t) = error
 ```
+
+
+Luego tenemos el término derivativo, para el cual te recomiendo ver el siguiente video: [Deducción de la Fórmula de la Derivada del Error](https://www.youtube.com/watch?v=ZYGA-PqmQr4)
+
+Voy a resumirlo, básicamente el cálculo en nuestro código sale de la fórmula de la derivada.
+
+```math
+f'(x) = \lim_{\Delta x \to 0} \frac{f(x + \Delta x) - f(x)}{\Delta x}
+```
+
+Con esta fórmula hay un problema, en nuestro caso tenemos puntos sueltos, por lo que no tendremos la situación en la que la variacion del tiempo sea 0, por lo que la fòrmula de la derivada instantanea nos quedaría asi:
+
+```math
+E'(t_i) = \frac{E(t_i) - E(t_i - \Delta t)}{\Delta t}
+ ```
+
+En el código, $`E'(t_i)`$ es ```rateError```, $`E(t_i - \Delta t)`$ es ```lastError```, y $`\Delta t`$ es ```elapsedTime```, por lo que podemos poner esto en el código:
+
+```
+rateError = (error - lastError) / elapsedTime;
+```
+
+
