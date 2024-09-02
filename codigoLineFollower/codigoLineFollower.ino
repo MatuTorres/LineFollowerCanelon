@@ -209,22 +209,13 @@ void readSensors()
     //uint16_t position = qtr.readLineBlack(sensorValues);
     //error = position - 3500;
     Serial.print("Sensores: ");
-    for (uint8_t i = 0; i < SensorCount; i++)
-    {
-      umbral = (qtr.calibrationOn.minimum[i] + qtr.calibrationOn.maximum[i]) / 2; //cambiar para que los calcule en la calibracion
-        if (sensorValues[i] <= umbral)
-        {
-            sensorValues[i] = 0;
-        }
-        else
-        {
-            sensorValues[i] = 1000;
-        }
-        Serial.print(sensorValues[i]); // lectura de sensores
-        Serial.print('\t');
-    }
     uint16_t position = qtr.readLineBlack(sensorValues);
     error = position - 3500;
+    for (int i = 0; i < SensorCount; i++)
+    {
+      Serial.print(sensorValues[i]);
+      Serial.print("\t");
+    }
     Serial.print("Pos: ");
     Serial.print(position);
     Serial.print('\t');
@@ -246,7 +237,7 @@ void controlMotors()
   elapsedTime = (double)(currentTime - previousTime) / 1000; // Calcular el tiempo transcurrido desde el cálculo anterior en segundos
 
 
-  cumError += error * elapsedTime;               // Calcular la integral del error
+  cumError += ((error + lastError) / 2) * elapsedTime; // Calcular la integral del error
   rateError = (error - lastError) / elapsedTime; // Calcular la derivada del error
   
   motVel = Kp * error + Ki * cumError + Kd * rateError; // Calcular la salida del PID
