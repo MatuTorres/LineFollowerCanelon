@@ -2,16 +2,16 @@
 #include <EEPROM.h>
 #include <QTRSensors.h>
 
-#define LED13 13 // NO CAMBIA
-#define Bot 8 // NO CAMBIA
-#define Bot1 2 // NO CAMBIA
-#define LedOn 13 // NO CAMBIA
-#define PWMM1B 11
-#define PWMM1A 10
+#define LED13 13 
+#define Bot 8 
+#define Bot1 2 
+#define LedOn 13 
+#define PWMM1B 11 //Para adelante
+#define PWMM1A 10 //Para atras
 #define ENM1 4
 #define ENM2 9
-#define PWMM2A 3
-#define PWMM2B 5
+#define PWMM2A 3 //Para atras
+#define PWMM2B 5 //Para adelante
 
 
 #define CALIBRATION_SENTINEL 0x55  // Un valor específico para detectar si hay datos
@@ -38,7 +38,7 @@ double mAVel = 0;
 double mBVel = 0;
 double motVel = 0;
 double Vel = 70; // Valor maximo para la velocidad del motor 
-double VelMin = 60; // Valor minimo para la velocidad del motor
+double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
 bool flag = false;
 bool flag2 = true;
 // Variables globales adicionales para el control PID
@@ -48,12 +48,12 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.3;
-double Ki = 0.01;
-double Kd = 0.35;
+double Kp = 0.005; 
+double Ki = 0.0065;
+double Kd = 0;
 
 //ajuste para motores distintos
-int ajuste = 13;
+int ajuste = 10;
 
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
@@ -225,7 +225,7 @@ void readSensors()
 // Controla los motores basándose en los valores de los sensores
 void controlMotors()
 {
-    currentTime = millis(); // Obtener el tiempo actual
+  currentTime = millis(); // Obtener el tiempo actual
     
   if (previousTime == 0) 
   {  // Si es la primera vez que se ejecuta la función
@@ -236,7 +236,8 @@ void controlMotors()
   elapsedTime = (double)(currentTime - previousTime) / 1000; // Calcular el tiempo transcurrido desde el cálculo anterior en segundos
 
 
-  cumError += ((error + lastError) / 2) * elapsedTime; // Calcular la integral del error
+  //cumError += error * elapsedTime; // Calcular la integral del error
+  cumError += ((error + lastError) / 2) * elapsedTime; // Esta es otra formula, teoricamente mas precisa
   rateError = (error - lastError) / elapsedTime; // Calcular la derivada del error
   
   motVel = Kp * error + Ki * cumError + Kd * rateError; // Calcular la salida del PID
@@ -260,14 +261,10 @@ void controlMotors()
 // Restringe la velocidad del motor a valores seguros
 void restrictMotorSpeed()
 {
-    if (mAVel < VelMin)
-        mAVel = VelMin;
-    if (mBVel < VelMin)
-        mBVel = VelMin;
-    if (mAVel > Vel)
-        mAVel = Vel;
-    if (mBVel > Vel)
-        mBVel = Vel;
+    if (mAVel < VelMin) mAVel = VelMin;
+    if (mBVel < VelMin) mBVel = VelMin;
+    if (mAVel > Vel) mAVel = Vel;
+    if (mBVel > Vel) mBVel = Vel;
 }
 
 // Imprime la velocidad del motor
