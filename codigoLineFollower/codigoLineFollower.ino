@@ -31,7 +31,6 @@ void printMotorSpeed();
 QTRSensors qtr;
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
-int umbral = 500;
 int position = 0;
 int error = 0;
 
