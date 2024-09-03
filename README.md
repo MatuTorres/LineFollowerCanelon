@@ -386,6 +386,15 @@ Ahora tenemos que pasar esta fórmula a C++, por lo que es todo igual agregando 
 cumError += ((error + lastError) / 2) * elapsedTime
 ```
 
+## Guía para calcular los parámetros del PID
+
+![image](https://github.com/user-attachments/assets/c76ef514-fede-4fed-934b-c2f266afbc11)
+
+![image](https://github.com/user-attachments/assets/ddc4934f-7075-4f07-a9f1-977f39193e00)
+
+![image](https://github.com/user-attachments/assets/d5b0891d-def0-4ce8-8432-21adde44a8b1)
+
+
 ## Contenido Útil
 
 [Libreria QTR Sensors](https://github.com/pololu/qtr-sensors-arduino)
