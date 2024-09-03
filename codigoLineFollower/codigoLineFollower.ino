@@ -34,11 +34,12 @@ uint16_t sensorValues[SensorCount];
 int position = 0;
 int error = 0;
 
-double mAVel = 0;
-double mBVel = 0;
 double motVel = 0;
 double Vel = 70; // Valor maximo para la velocidad del motor 
 double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
+double mAVel = Vel;
+double mBVel = Vel;
+
 bool flag = false;
 bool flag2 = true;
 // Variables globales adicionales para el control PID
@@ -48,9 +49,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.005; 
-double Ki = 0.0065;
-double Kd = 0;
+double Kp = 0.04; 
+double Ki = 0;
+double Kd = 0.01;
 
 //ajuste para motores distintos
 int ajuste = 10;
@@ -58,9 +59,9 @@ int ajuste = 10;
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
 {
+    configureIO();
     configureSensors();
     configureMotor();
-    configureIO();
     calibration();
 }
 
@@ -142,12 +143,12 @@ void configureSensors()
 // Configuración inicial del motor
 void configureMotor()
 {
-    digitalWrite(PWMM2B, LOW);
+    digitalWrite(PWMM2A, LOW);
     digitalWrite(ENM1, HIGH);
-    digitalWrite(PWMM1B, LOW);
+    digitalWrite(PWMM1A, LOW);
     digitalWrite(ENM2, HIGH);
-    analogWrite(PWMM1A, 0);
-    analogWrite(PWMM2A, 0);
+    analogWrite(PWMM1B, 0);
+    analogWrite(PWMM2B, 0);
 }
 
 // Proceso de calibración de los sensores
@@ -156,11 +157,30 @@ void calibration()
     pinMode(LED13, OUTPUT);
     digitalWrite(LED13, HIGH);
 
+    //const int calVel = 55; // Velocidad de motores en calibracion
+
     for (uint16_t i = 0; i < 150; i++)
     {
-        qtr.calibrate();
+      /*if (i % 20 == 0)
+      {
+        analogWrite(PWMM1B, calVel);
+        analogWrite(PWMM2B, calVel + ajuste);
+        analogWrite(PWMM1A, 0);
+        analogWrite(PWMM2A, 0);
+      }
+      else if (i % 10 == 0)
+      {
+        analogWrite(PWMM1B, 0);
+        analogWrite(PWMM2B, 0);
+        analogWrite(PWMM1A, calVel);
+        analogWrite(PWMM2A, calVel + ajuste);
+      }*/ // Todo este condicional es para calibracion automatica pero por ahora es al pedo
+      qtr.calibrate();
     }
-
+    /*
+    analogWrite(PWMM1B, 0);
+    analogWrite(PWMM2B, 0);
+    */
     digitalWrite(LED13, LOW);
     Serial.begin(9600);
     printCalibration();
@@ -220,6 +240,7 @@ void readSensors()
     Serial.print('\t');
     Serial.print("Err: ");
     Serial.print(error);
+    Serial.print('\t');
 }
 
 // Controla los motores basándose en los valores de los sensores
@@ -249,9 +270,9 @@ void controlMotors()
   mBVel = Vel - motVel;
 
   restrictMotorSpeed();
-
-  analogWrite(PWMM1B, mAVel);
-  analogWrite(PWMM2B, mBVel + ajuste);
+  
+  //analogWrite(PWMM1B, mAVel);
+  //analogWrite(PWMM2B, mBVel + ajuste);
   //el ajuste es xq los motores son distintos
   printMotorSpeed();
 
