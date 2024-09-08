@@ -34,7 +34,7 @@ int position = 0;
 int error = 0;
 
 double motVel = 0;
-double Vel = 55; // Valor base para la velocidad del motor 
+double Vel = 65; // Valor base para la velocidad del motor 
 double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
 double mAVel = Vel;
 double mBVel = Vel;
@@ -48,9 +48,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.0030; 
-double Ki = 0.0002;
-double Kd = 0.0030;
+double Kp = 0.0040; 
+double Ki = 0.00015; 
+double Kd = 0.0020;
 
 //ajuste para motores distintos
 int ajuste = 10;
