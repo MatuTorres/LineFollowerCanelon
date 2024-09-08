@@ -11,7 +11,7 @@
 #define ENM1 4
 #define ENM2 9
 #define PWMM2A 3 //Para atras
-#define PWMM2B 5 //Para adel
+#define PWMM2B 5 //Para adelante
 
 
 #define CALIBRATION_SENTINEL 0x55  // Un valor específico para detectar si hay datos
