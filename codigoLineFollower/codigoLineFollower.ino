@@ -48,9 +48,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.004; 
-double Ki = 0.000;
-double Kd = 0.002;
+double Kp = 0.0030; 
+double Ki = 0.0002;
+double Kd = 0.0030;
 
 //ajuste para motores distintos
 int ajuste = 10;
@@ -290,8 +290,8 @@ void applySpeed()
 // Restringe la velocidad del motor a valores seguros
 void restrictMotorSpeed()
 {
-  mAVel = constrain(mAVel, -255, 255);
-  mBVel = constrain(mBVel, -255, 255);
+  mAVel = constrain(mAVel, 0, 255);
+  mBVel = constrain(mBVel, 0, 255);
 }
 
 // Imprime la velocidad del motor
