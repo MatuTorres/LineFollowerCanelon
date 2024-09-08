@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <EEPROM.h>
 #include <QTRSensors.h>
 
 #define LED13 13 
@@ -35,7 +34,7 @@ int position = 0;
 int error = 0;
 
 double motVel = 0;
-double Vel = 70; // Valor maximo para la velocidad del motor 
+double Vel = 55; // Valor base para la velocidad del motor 
 double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
 double mAVel = Vel;
 double mBVel = Vel;
@@ -49,9 +48,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.04; 
-double Ki = 0;
-double Kd = 0.01;
+double Kp = 0.004; 
+double Ki = 0.000;
+double Kd = 0.002;
 
 //ajuste para motores distintos
 int ajuste = 10;
@@ -59,19 +58,26 @@ int ajuste = 10;
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
 {
-    configureIO();
-    configureSensors();
-    configureMotor();
-    calibration();
+  configureIO();
+  configureSensors();
+  configureMotor();
+  calibration();
+
+  //Serial.begin(9600);
+  //printCalibration();
 }
 
 // Esta función se encarga de leer los sensores y controlar los motores
 void loop()
 {
-    funBotones();
-    readSensors();
-    controlMotors();
-    Serial.println();
+  funBotones();
+  readSensors();
+  controlMotors();
+
+  //printSensors();
+  //printMotorSpeed();
+
+  Serial.println();
 }
 
 // Función para el control de los botones
@@ -154,36 +160,14 @@ void configureMotor()
 // Proceso de calibración de los sensores
 void calibration()
 {
-    pinMode(LED13, OUTPUT);
-    digitalWrite(LED13, HIGH);
+  pinMode(LED13, OUTPUT);
+  digitalWrite(LED13, HIGH);
 
-    //const int calVel = 55; // Velocidad de motores en calibracion
-
-    for (uint16_t i = 0; i < 150; i++)
-    {
-      /*if (i % 20 == 0)
-      {
-        analogWrite(PWMM1B, calVel);
-        analogWrite(PWMM2B, calVel + ajuste);
-        analogWrite(PWMM1A, 0);
-        analogWrite(PWMM2A, 0);
-      }
-      else if (i % 10 == 0)
-      {
-        analogWrite(PWMM1B, 0);
-        analogWrite(PWMM2B, 0);
-        analogWrite(PWMM1A, calVel);
-        analogWrite(PWMM2A, calVel + ajuste);
-      }*/ // Todo este condicional es para calibracion automatica pero por ahora es al pedo
-      qtr.calibrate();
-    }
-    /*
-    analogWrite(PWMM1B, 0);
-    analogWrite(PWMM2B, 0);
-    */
-    digitalWrite(LED13, LOW);
-    Serial.begin(9600);
-    printCalibration();
+  for (uint16_t i = 0; i < 300; i++)
+  {
+    qtr.calibrate();
+  }
+  digitalWrite(LED13, LOW);
 }
 
 // Imprime los valores de calibración
@@ -192,7 +176,7 @@ void printCalibration()
   Serial.print("calibration on minimum: ");
     for (uint8_t i = 0; i < SensorCount; i++)
     {
-        Serial.print(qtr.calibrationOn.minimum[SensorCount - i]);
+        Serial.print(qtr.calibrationOn.minimum[i]);
         Serial.print(' ');
     }
     Serial.println();
@@ -225,22 +209,24 @@ void configureIO()
 // Lee los valores de los sensores
 void readSensors()
 {
-    //uint16_t position = qtr.readLineBlack(sensorValues);
-    //error = position - 3500;
-    Serial.print("Sensores: ");
-    uint16_t position = qtr.readLineBlack(sensorValues);
-    error = position - 3500;
-    for (int i = 0; i < SensorCount; i++)
-    {
-      Serial.print(sensorValues[i]);
-      Serial.print("\t");
-    }
-    Serial.print("Pos: ");
-    Serial.print(position);
-    Serial.print('\t');
-    Serial.print("Err: ");
-    Serial.print(error);
-    Serial.print('\t');
+  uint16_t position = qtr.readLineBlack(sensorValues);
+  error = position - 3500;
+}
+
+void printSensors()
+{
+  Serial.print("Sensores: ");
+  for (int i = 0; i < SensorCount; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print("\t");
+  }
+  Serial.print("Pos: ");
+  Serial.print(position);
+  Serial.print('\t');
+  Serial.print("Err: ");
+  Serial.print(error);
+  Serial.print('\t');
 }
 
 // Controla los motores basándose en los valores de los sensores
@@ -271,21 +257,41 @@ void controlMotors()
 
   restrictMotorSpeed();
   
-  //analogWrite(PWMM1B, mAVel);
-  //analogWrite(PWMM2B, mBVel + ajuste);
+  applySpeed();
   //el ajuste es xq los motores son distintos
-  printMotorSpeed();
+}
 
-  //delay(25);
+void applySpeed()
+{
+  // Aplicar velocidades
+  if (mAVel >= 0) 
+  {
+      analogWrite(PWMM1B, mAVel);
+      analogWrite(PWMM1A, 0);
+  } 
+  else 
+  {
+      analogWrite(PWMM1A, -mAVel);  // Enciende motor en dirección opuesta
+      analogWrite(PWMM1B, 0);
+  }
+
+  if (mBVel >= 0) 
+  {
+      analogWrite(PWMM2B, mBVel + ajuste);
+      analogWrite(PWMM2A, 0);
+  } 
+  else 
+  {
+      analogWrite(PWMM2A, -mBVel + ajuste);  // Enciende motor en dirección opuesta
+      analogWrite(PWMM2B, 0);
+  }
 }
 
 // Restringe la velocidad del motor a valores seguros
 void restrictMotorSpeed()
 {
-    if (mAVel < VelMin) mAVel = VelMin;
-    if (mBVel < VelMin) mBVel = VelMin;
-    if (mAVel > Vel) mAVel = Vel;
-    if (mBVel > Vel) mBVel = Vel;
+  mAVel = constrain(mAVel, -255, 255);
+  mBVel = constrain(mBVel, -255, 255);
 }
 
 // Imprime la velocidad del motor
