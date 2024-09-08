@@ -406,3 +406,5 @@ cumError += ((error + lastError) / 2) * elapsedTime
 [VIDEO - Integrales - El traductor de ingenieria](https://www.youtube.com/watch?v=Ec-cGjh0Fr0&t=886s)
 
 [VIDEO - PID Control - AerospaceControlsLab](https://www.youtube.com/watch?v=4Y7zG48uHRo)
+
+[VIDEO - Control PID - Fernando Peral Pérez (Ibai)](https://youtu.be/s-z9a9mRE-0?si=KjYwa9yBf8JfzIJH)
