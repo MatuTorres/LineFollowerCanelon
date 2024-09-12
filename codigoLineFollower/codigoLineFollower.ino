@@ -12,9 +12,6 @@
 #define PWMM2A 3 //Para atras
 #define PWMM2B 5 //Para adelante
 
-
-#define CALIBRATION_SENTINEL 0x55  // Un valor específico para detectar si hay datos
-
 // declarar funciones
 void configureSensors();
 void configureMotor();
@@ -34,7 +31,7 @@ int position = 0;
 int error = 0;
 
 double motVel = 0;
-double Vel = 65; // Valor base para la velocidad del motor 
+double Vel = 73; // Valor base para la velocidad del motor 
 double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
 double mAVel = Vel;
 double mBVel = Vel;
@@ -48,12 +45,12 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.0040; 
-double Ki = 0.00015; 
+double Kp = 0.0075; 
+double Ki = 0.0000; 
 double Kd = 0.0020;
 
 //ajuste para motores distintos
-int ajuste = 10;
+int ajuste = 13;
 
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
@@ -71,11 +68,14 @@ void setup()
 void loop()
 {
   funBotones();
-  readSensors();
-  controlMotors();
 
-  //printSensors();
-  //printMotorSpeed();
+  readSensors();
+
+  controlMotors();
+  //applySpeed();
+
+  printSensors();
+  printMotorSpeed();
 
   Serial.println();
 }
@@ -83,60 +83,24 @@ void loop()
 // Función para el control de los botones
 void funBotones()
 {
-    if (digitalRead(Bot1) == LOW)
+  actualTime = 0;
+  while (digitalRead(Bot == LOW))
+  {
+    //espera.
+  }
+
+  if(digitalRead(Bot == HIGH))
+  {
+    actualTime = millis();
+  }
+
+  if(digitalRead(Bot == LOW))
+  {
+    if (actualTime > 2000)
     {
-        analogWrite(PWMM1A, 0);
-        analogWrite(PWMM2A, 0);
-        flag2 = true;
-        delay(2000);
-        if (digitalRead(Bot1) == LOW)
-        {
-            //analogWrite(PWMM1B, 255);
-            //analogWrite(PWMM2B, 255);
-            flag2 = true;
-            flag = true;
-            delay(1000);
-        }
+      
     }
-
-    while (flag2 == true)
-    {
-        while (flag == true)
-        {
-            if (digitalRead(Bot1) == LOW)
-            {
-                flag = false;
-            }
-        }
-        digitalWrite(LedOn, HIGH);
-        delay(100);
-        digitalWrite(LedOn, LOW);
-        delay(100);
-
-        if (digitalRead(Bot) == LOW)
-        {
-            flag2 = false;
-            digitalWrite(LedOn, HIGH);
-            while (digitalRead(Bot) == LOW)
-            {
-                /* espera */
-            }
-        }
-        if (digitalRead(Bot1) == LOW)
-        {
-            analogWrite(PWMM1A, 0);
-            analogWrite(PWMM2A, 0);
-            delay(2000);
-
-            if (digitalRead(Bot1) == LOW)
-            {
-                analogWrite(PWMM1A, 255);
-                analogWrite(PWMM2A, 255);
-                flag = true;
-                delay(1000);
-            }
-        }
-    }
+  }
 }
 
 // Configuración inicial de los sensores
@@ -209,7 +173,7 @@ void configureIO()
 // Lee los valores de los sensores
 void readSensors()
 {
-  uint16_t position = qtr.readLineBlack(sensorValues);
+  uint16_t position = qtr.readLineWhite(sensorValues);
   error = position - 3500;
 }
 
@@ -255,10 +219,7 @@ void controlMotors()
   mAVel = Vel + motVel;
   mBVel = Vel - motVel;
 
-  restrictMotorSpeed();
-  
-  applySpeed();
-  //el ajuste es xq los motores son distintos
+  restrictMotorSpeed();  //el ajuste es xq los motores son distintos
 }
 
 void applySpeed()
