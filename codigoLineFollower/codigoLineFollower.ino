@@ -4,7 +4,7 @@
 #define LED13 13 
 #define Bot 8 
 #define Bot1 2 
-#define LedOn 13 
+#define led 13 
 #define PWMM1B 11 //Para adelante
 #define PWMM1A 10 //Para atras
 #define ENM1 4
@@ -36,8 +36,6 @@ double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en cas
 double mAVel = Vel;
 double mBVel = Vel;
 
-bool flag = false;
-bool flag2 = true;
 // Variables globales adicionales para el control PID
 unsigned long currentTime, previousTime = 0;
 double elapsedTime;
@@ -49,7 +47,7 @@ double Kp = 0.0075;
 double Ki = 0.0000; 
 double Kd = 0.0020;
 
-//ajuste para motores distintos
+// Ajuste para motores distintos
 int ajuste = 13;
 
 // Esta función se encarga de la configuración inicial del sistema
@@ -60,6 +58,11 @@ void setup()
   configureMotor();
   calibration();
 
+  while (!funBotones()) // Si retorna 0 sigue esperando, si retorna 1 el auto empieza a andar
+  {
+    //espera
+  }
+
   //Serial.begin(9600);
   //printCalibration();
 }
@@ -67,8 +70,6 @@ void setup()
 // Esta función se encarga de leer los sensores y controlar los motores
 void loop()
 {
-  funBotones();
-
   readSensors();
 
   controlMotors();
@@ -81,33 +82,87 @@ void loop()
 }
 
 // Función para el control de los botones
-void funBotones()
+int funBotones()
 {
-  actualTime = 0;
-  while (digitalRead(Bot == LOW))
+  unsigned long actualTime = millis();
+  static int state = ~(digitalRead(bot));
+  static int prevState = 0;
+  static unsigned long timePressed = 0;
+  static unsigned long startedPressing = 0;
+  static int flag = 0; // Si flag es 1, estan los dos motores al palo
+  static int ledState = 0;
+  static unsigned long lastBlink = 0;
+  
+  if (state == 0 && prevState == 0) // No se esta apretando el boton
   {
-    //espera.
-  }
-
-  if(digitalRead(Bot == HIGH))
-  {
-    actualTime = millis();
-  }
-
-  if(digitalRead(Bot == LOW))
-  {
-    if (actualTime > 2000)
+    if (ledState == 0 && lastBlink - actualTime > 100)
     {
-      
+      lastBlink = actualTime;
+      ledState = 1;
+      digitalWrite(led, HIGH);
+    }
+    else if (ledState == 1 && lastBlink - actualTime > 100)
+    {
+      lastBlink = actualTime;
+      ledState = 0;
+      digitalWrite(led, LOW);
     }
   }
+  else if (state == 1 && prevState == 0) // Se empezo a apretar el boton
+  {
+    prevState = 1;
+    startedPressing = actualTime;
+  }
+  else if (state == 1 && prevState == 1) // Se esta apretando el boton
+  {
+    timePressed = actualTime - startedPressing;
+
+    if (timePressed < 2000)
+    {
+      digitalWrite(led, LOW);
+    }
+    else
+    {
+      digitalWrite(led, HIGH);
+    }
+  }
+  else if (state == 0 && prevState == 1) // Se dejo de apretar el boton
+  {
+    prevState = 0;
+    timePressed = actualTime - startedPressing;
+  }
+  
+  if (state == 0 && timePressed != 0) // Si esta apretado seguir esperando
+  {
+    // Manejo de las flags
+    if (timePressed < 2000 && flag == 0)
+    {
+      flag = 1;
+      timePressed = 0;
+      analogWrite(PWMM1B, 255);
+      analogWrite(PWMM2B, 255);
+    }
+    else if (timePressed < 2000 && flag == 1)
+    {
+      flag = 0;
+      timePressed = 0;
+      analogWrite(PWMM1B, 0);
+      analogWrite(PWMM2B, 0);
+    }
+    else if (timePressed >= 2000)
+    {
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 // Configuración inicial de los sensores
 void configureSensors()
 {
-    qtr.setTypeAnalog();
-    qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
+  qtr.setTypeAnalog();
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
 }
 
 // Configuración inicial del motor
@@ -158,7 +213,7 @@ void printCalibration()
 // Configura los pins de entrada/salida
 void configureIO()
 {
-    pinMode(LedOn, OUTPUT);
+    pinMode(led, OUTPUT);
     pinMode(Bot, INPUT_PULLUP);
     pinMode(Bot1, INPUT_PULLUP);
     pinMode(PWMM1A, OUTPUT);
