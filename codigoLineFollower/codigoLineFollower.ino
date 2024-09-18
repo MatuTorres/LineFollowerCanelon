@@ -2,8 +2,7 @@
 #include <QTRSensors.h>
 
 #define LED13 13 
-#define Bot 8 
-#define Bot1 2 
+#define bot 8 
 #define led 13 
 #define PWMM1B 11 //Para adelante
 #define PWMM1A 10 //Para atras
@@ -18,7 +17,7 @@ void configureMotor();
 void calibration();
 void printCalibration();
 void configureIO();
-void funBotones();
+int funBotones();
 void readSensors();
 void controlMotors();
 void restrictMotorSpeed();
@@ -214,8 +213,7 @@ void printCalibration()
 void configureIO()
 {
     pinMode(led, OUTPUT);
-    pinMode(Bot, INPUT_PULLUP);
-    pinMode(Bot1, INPUT_PULLUP);
+    pinMode(bot, INPUT_PULLUP);
     pinMode(PWMM1A, OUTPUT);
     pinMode(PWMM2A, OUTPUT);
     pinMode(ENM1, OUTPUT);
