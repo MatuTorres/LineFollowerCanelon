@@ -42,12 +42,21 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.0075; 
+double Kp = 0.0060; 
 double Ki = 0.0000; 
-double Kd = 0.0020;
+double Kd = 0.0030;
 
 // Ajuste para motores distintos
 int ajuste = 13;
+
+// Variables para los botones
+int prevState = 0;
+int flag = 0; // Si flag es 1, estan los dos motores al palo
+unsigned long timePressed = 0;
+unsigned long startedPressing = 0;
+int ledState = 0;
+unsigned long lastBlink = 0;
+
 
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
@@ -57,13 +66,15 @@ void setup()
   configureMotor();
   calibration();
 
+  Serial.begin(9600);
+  printCalibration();
+
   while (!funBotones()) // Si retorna 0 sigue esperando, si retorna 1 el auto empieza a andar
   {
-    //espera
+    Serial.println("Llegue");
   }
 
-  //Serial.begin(9600);
-  //printCalibration();
+  
 }
 
 // Esta función se encarga de leer los sensores y controlar los motores
@@ -72,7 +83,7 @@ void loop()
   readSensors();
 
   controlMotors();
-  //applySpeed();
+  applySpeed();
 
   printSensors();
   printMotorSpeed();
@@ -84,23 +95,19 @@ void loop()
 int funBotones()
 {
   unsigned long actualTime = millis();
-  static int state = ~(digitalRead(bot));
-  static int prevState = 0;
-  static unsigned long timePressed = 0;
-  static unsigned long startedPressing = 0;
-  static int flag = 0; // Si flag es 1, estan los dos motores al palo
-  static int ledState = 0;
-  static unsigned long lastBlink = 0;
+  int state = !digitalRead(bot);
+
+  Serial.println(state);
   
   if (state == 0 && prevState == 0) // No se esta apretando el boton
   {
-    if (ledState == 0 && lastBlink - actualTime > 100)
+    if (ledState == 0 && actualTime - lastBlink > 182) // En honor a blink-182
     {
       lastBlink = actualTime;
       ledState = 1;
       digitalWrite(led, HIGH);
     }
-    else if (ledState == 1 && lastBlink - actualTime > 100)
+    else if (ledState == 1 && actualTime - lastBlink > 182)
     {
       lastBlink = actualTime;
       ledState = 0;
