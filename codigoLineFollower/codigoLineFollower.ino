@@ -24,10 +24,12 @@ void restrictMotorSpeed();
 void printMotorSpeed();
 
 QTRSensors qtr;
-const uint8_t SensorCount = 8;
+const uint8_t SensorCount = 6;
 uint16_t sensorValues[SensorCount];
 int position = 0;
 int error = 0;
+const int errorCount = 5;
+int errorArray[errorCount];
 
 double motVel = 0;
 double Vel = 73; // Valor base para la velocidad del motor 
@@ -42,9 +44,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.0060; 
-double Ki = 0.0000; 
-double Kd = 0.0030;
+double Kp = 0.0050; 
+double Ki = 0.0001; 
+double Kd = 0.0015;
 
 // Ajuste para motores distintos
 int ajuste = 13;
@@ -168,7 +170,7 @@ int funBotones()
 void configureSensors()
 {
   qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
+  qtr.setSensorPins((const uint8_t[]){A1, A2, A3, A4, A5, A6}, SensorCount);
 }
 
 // Configuración inicial del motor
@@ -233,8 +235,12 @@ void configureIO()
 // Lee los valores de los sensores
 void readSensors()
 {
-  uint16_t position = qtr.readLineWhite(sensorValues);
-  error = position - 3500;
+  for (int i = 0; i < errorCount; i++)
+  {
+    uint16_t position = qtr.readLineWhite(sensorValues);
+    errorArray[i] = position - 3500;
+  }
+  error = (errorArray[0] + errorArray[1] + errorArray[2] + errorArray[3] + errorArray[4]) / errorCount;
 }
 
 void printSensors()
