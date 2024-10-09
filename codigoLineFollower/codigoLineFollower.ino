@@ -29,7 +29,6 @@ uint16_t sensorValues[SensorCount];
 int position = 0;
 int error = 0;
 const int errorCount = 5;
-int errorArray[errorCount];
 
 double motVel = 0;
 double Vel = 73; // Valor base para la velocidad del motor 
@@ -235,12 +234,13 @@ void configureIO()
 // Lee los valores de los sensores
 void readSensors()
 {
+  error = 0;
   for (int i = 0; i < errorCount; i++)
   {
     uint16_t position = qtr.readLineWhite(sensorValues);
-    errorArray[i] = position - 3500;
+    error += position - 3500;
   }
-  error = (errorArray[0] + errorArray[1] + errorArray[2] + errorArray[3] + errorArray[4]) / errorCount;
+  error /= errorCount;
 }
 
 void printSensors()
