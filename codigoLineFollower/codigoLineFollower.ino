@@ -72,7 +72,7 @@ void setup()
 
   while (!funBotones()) // Si retorna 0 sigue esperando, si retorna 1 el auto empieza a andar
   {
-    Serial.println("Llegue");
+    //Serial.println("Llegue");
   }
 
   
