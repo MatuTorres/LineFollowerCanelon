@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <QTRSensors.h>
 
+// Definicion de pines
 #define LED13 13 
 #define bot 8 
 #define led 13 
@@ -11,34 +12,26 @@
 #define PWMM2A 3 //Para atras
 #define PWMM2B 5 //Para adelante
 
-// declarar funciones
-void configureSensors();
-void configureMotor();
-void calibration();
-void printCalibration();
-void configureIO();
-int funBotones();
-void readSensors();
-void controlMotors();
-void restrictMotorSpeed();
-void printMotorSpeed();
+// Constantes de sensado y posicion
+#define SensorCount 8
+#define errorCount 3 // Cantidad de errores para calcular promedio y eliminar ruido
 
+// Constantes de los motores y velocidades
+#define Vel 50 // Valor base para la velocidad del motor 
+#define VelMin 0 // Valor minimo de velocidad
+#define VelMax 255 // Valor maximo de velocidad
+#define ajuste 13 // Ajuste para motores distintos
+
+// Variables de sensado y posicion
 QTRSensors qtr;
-const uint8_t SensorCount = 6;
 uint16_t sensorValues[SensorCount];
 int position = 0;
 int error = 0;
-const int errorCount = 5;
 
-double motVel = 0;
-double Vel = 50; // Valor base para la velocidad del motor 
-double VelMin = 0; // Valor minimo para la velocidad del motor, solo usar en casos de debugging
-double mAVel = Vel;
-double mBVel = Vel;
-int stateCurve = 0; //stateCurve registra si el auto paso por una curva antes de boofear, solo boofea una vez por recta
-unsigned long boofStartTime = 0;
-unsigned long boofDuration = 500;
-int isBoofing = 1;
+// Velocidades
+double motVel = 0; // Salida del PID
+double mAVel = Vel; // Velocidad motor A
+double mBVel = Vel; // Velocidad motor B
 
 // Variables globales adicionales para el control PID
 unsigned long currentTime, previousTime = 0;
@@ -46,14 +39,10 @@ double elapsedTime;
 double cumError = 0, rateError;
 double lastError = 0;
 
-
 // Parámetros del PID
 double Kp = 0.0090; 
 double Ki = 0.0001; 
 double Kd = 0.0020;
-
-// Ajuste para motores distintos
-int ajuste = 13;
 
 // Variables para los botones
 int prevState = 0;
@@ -63,7 +52,6 @@ unsigned long startedPressing = 0;
 int ledState = 0;
 unsigned long lastBlink = 0;
 
-
 // Esta función se encarga de la configuración inicial del sistema
 void setup()
 {
@@ -72,15 +60,10 @@ void setup()
   configureMotor();
   calibration();
 
-//  Serial.begin(9600);
-//  printCalibration();
+  //Serial.begin(9600);
+  //printCalibration();
 
-  while (!funBotones()) // Si retorna 0 sigue esperando, si retorna 1 el auto empieza a andar
-  {
-    //Serial.println("Llegue");
-  }
-
-  
+  while (!funBotones()){} // Si retorna 0 sigue esperando, si retorna 1 el auto empieza a andar
 }
 
 // Esta función se encarga de leer los sensores y controlar los motores
@@ -89,11 +72,10 @@ void loop()
   readSensors();
 
   controlMotors();
-  boof();
   applySpeed();
 
-//  printSensors();
-//  printMotorSpeed();
+  //printSensors();
+  //printMotorSpeed();
 }
 
 // Función para el control de los botones
@@ -102,7 +84,7 @@ int funBotones()
   unsigned long actualTime = millis();
   int state = !digitalRead(bot);
 
-//  Serial.println(state);
+  //Serial.println(state);
   
   if (state == 0 && prevState == 0) // No se esta apretando el boton
   {
@@ -173,7 +155,7 @@ int funBotones()
 void configureSensors()
 {
   qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){A1, A2, A3, A4, A5, A6}, SensorCount);
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
 }
 
 // Configuración inicial del motor
@@ -201,25 +183,25 @@ void calibration()
 }
 
 // Imprime los valores de calibración
-//void printCalibration()
-//{
-//  Serial.print("calibration on minimum: ");
-//    for (uint8_t i = 0; i < SensorCount; i++)
-//    {
-//        Serial.print(qtr.calibrationOn.minimum[i]);
-//        Serial.print(' ');
-//    }
-//    Serial.println();
-//    Serial.print("calibration on maximum: ");
-//    for (uint8_t i = 0; i < SensorCount; i++)
-//    {
-//        Serial.print(qtr.calibrationOn.maximum[i]);
-//        Serial.print(' ');
-//    }
-//    Serial.println();
-//    Serial.println();
-//    delay(500);
-//}
+void printCalibration()
+{
+  Serial.print("calibration on minimum: ");
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+      Serial.print(qtr.calibrationOn.minimum[i]);
+      Serial.print(' ');
+  }
+  Serial.println();
+  Serial.print("calibration on maximum: ");
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+     Serial.print(qtr.calibrationOn.maximum[i]);
+     Serial.print(' ');
+  }
+  Serial.println();
+  Serial.println();
+  delay(500);
+}
 
 // Configura los pins de entrada/salida
 void configureIO()
@@ -247,21 +229,21 @@ void readSensors()
   error /= errorCount;
 }
 
-//void printSensors()
-//{
-//  Serial.print("Sensores: ");
-//  for (int i = 0; i < SensorCount; i++)
-//  {
-//    Serial.print(sensorValues[i]);
-//    Serial.print("\t");
-//  }
-//  Serial.print("Pos: ");
-//  Serial.print(position);
-//  Serial.print('\t');
-//  Serial.print("Err: ");
-//  Serial.print(error);
-//  Serial.print('\t');
-//}
+void printSensors()
+{
+  Serial.print("Sensores: ");
+  for (int i = 0; i < SensorCount; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print("\t");
+  }
+  Serial.print("Pos: ");
+  Serial.print(position);
+  Serial.print('\t');
+  Serial.print("Err: ");
+  Serial.print(error);
+  Serial.print('\t');
+}
 
 // Controla los motores basándose en los valores de los sensores
 void controlMotors()
@@ -276,7 +258,6 @@ void controlMotors()
   
   elapsedTime = (double)(currentTime - previousTime) / 1000; // Calcular el tiempo transcurrido desde el cálculo anterior en segundos
 
-
   //cumError += error * elapsedTime; // Calcular la integral del error
   cumError += ((error + lastError) / 2) * elapsedTime; // Esta es otra formula, teoricamente mas precisa
   rateError = (error - lastError) / elapsedTime; // Calcular la derivada del error
@@ -289,7 +270,7 @@ void controlMotors()
   mAVel = Vel + motVel;
   mBVel = Vel - motVel;
 
-  restrictMotorSpeed();  //el ajuste es xq los motores son distintos
+  restrictMotorSpeed();
 }
 
 void applySpeed()
@@ -302,7 +283,7 @@ void applySpeed()
   } 
   else 
   {
-      analogWrite(PWMM1A, -mAVel);  // Enciende motor en dirección opuesta
+      analogWrite(PWMM1A, -mAVel);  // El ajuste porque los motores son distintos
       analogWrite(PWMM1B, 0);
   }
 
@@ -313,7 +294,7 @@ void applySpeed()
   } 
   else 
   {
-      analogWrite(PWMM2A, -mBVel + ajuste);  // Enciende motor en dirección opuesta
+      analogWrite(PWMM2A, -mBVel + ajuste);  // El ajuste porque los motores son distintos
       analogWrite(PWMM2B, 0);
   }
 }
@@ -321,47 +302,21 @@ void applySpeed()
 // Restringe la velocidad del motor a valores seguros
 void restrictMotorSpeed()
 {
-  mAVel = constrain(mAVel, 0, 255);
-  mBVel = constrain(mBVel, 0, 255);
+  mAVel = constrain(mAVel, VelMin, VelMax);
+  mBVel = constrain(mBVel, VelMin, VelMax);
 }
 
 // Imprime la velocidad del motor
-//void printMotorSpeed()
-//{
-//    Serial.print('\t');
-//    Serial.print("mAVel: ");
-//    Serial.print(mAVel);
-//    Serial.print('\t');
-//    Serial.print("mBVel: ");
-//    Serial.print(mBVel);
-//    Serial.print('\t');
-//    Serial.print("motVel: ");
-//    Serial.println(motVel);
-//}
-
-void boof()
+void printMotorSpeed()
 {
-  if(error > -200 || error < 200 || stateCurve == 0)
-  {
-    int percent = (80 * Vel) / 100; // 80% de la velocidad, para sumarsela al auto
-
-    analogWrite(PWMM1B, 0);
-    analogWrite(PWMM1A, 100);
-    analogWrite(PWMM2B, 0);
-    analogWrite(PWMM2A, 100);
-
-    unsigned long actualTime2 = millis();
-
-    if(isBoofing == 1)
-    {
-      boofStartTime = actualTime2;
-      isBoofing = 0;
-    }
-
-    if(actualTime2 - boofStartTime >= boofDuration)
-    {
-      stateCurve = 1;
-      isBoofing = 1;
-    }
-  }
+    Serial.print('\t');
+    Serial.print("mAVel: ");
+    Serial.print(mAVel);
+    Serial.print('\t');
+    Serial.print("mBVel: ");
+    Serial.print(mBVel);
+    Serial.print('\t');
+    Serial.print("motVel: ");
+    Serial.println(motVel);
 }
+
