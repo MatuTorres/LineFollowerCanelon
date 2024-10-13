@@ -3,6 +3,9 @@
 
 MPU6050 mpu;
 
+int gxAjuste = -3;
+int gyAjuste = 1;
+
 void setup() {
   Serial.begin(9600);
   Wire.begin();
@@ -37,8 +40,8 @@ void loop() {
   ay /= 16384.0;
   az /= 16384.0;
 
-  gx /= 131.0; // 131 LSB/°/s para ±250°/s
-  gy /= 131.0;
+  gx = (gx / 131.0) - gxAjuste; // 131 LSB/°/s para ±250°/s
+  gy = (gy / 131.0) - gyAjuste;
   gz /= 131.0;
 
   // Imprimir datos del acelerómetro
