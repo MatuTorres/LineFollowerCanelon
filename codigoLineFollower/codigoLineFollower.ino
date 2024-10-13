@@ -2,7 +2,6 @@
 #include <QTRSensors.h>
 
 // Definicion de pines
-#define LED13 13 
 #define bot 8 
 #define led 13 
 #define PWMM1B 11 //Para adelante
@@ -172,14 +171,14 @@ void configureMotor()
 // Proceso de calibración de los sensores
 void calibration()
 {
-  pinMode(LED13, OUTPUT);
-  digitalWrite(LED13, HIGH);
+  pinMode(led, OUTPUT);
+  digitalWrite(led, HIGH);
 
   for (uint16_t i = 0; i < 300; i++)
   {
     qtr.calibrate();
   }
-  digitalWrite(LED13, LOW);
+  digitalWrite(led, LOW);
 }
 
 // Imprime los valores de calibración
