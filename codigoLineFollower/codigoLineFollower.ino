@@ -19,7 +19,6 @@
 #define Vel 50 // Valor base para la velocidad del motor 
 #define VelMin 0 // Valor minimo de velocidad
 #define VelMax 255 // Valor maximo de velocidad
-#define ajuste 13 // Ajuste para motores distintos
 
 // Variables de sensado y posicion
 QTRSensors qtr;
@@ -39,9 +38,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.0090; 
-double Ki = 0.0001; 
-double Kd = 0.0020;
+double Kp = 0.09; 
+double Ki = 0.001; 
+double Kd = 0.005;
 
 // Variables para los botones
 int prevState = 0;
@@ -174,7 +173,7 @@ void calibration()
   pinMode(led, OUTPUT);
   digitalWrite(led, HIGH);
 
-  for (uint16_t i = 0; i < 300; i++)
+  for (uint16_t i = 0; i < 400; i++)
   {
     qtr.calibrate();
   }
@@ -288,12 +287,12 @@ void applySpeed()
 
   if (mBVel >= 0) 
   {
-      analogWrite(PWMM2B, mBVel + ajuste);
+      analogWrite(PWMM2B, mBVel);
       analogWrite(PWMM2A, 0);
   } 
   else 
   {
-      analogWrite(PWMM2A, -mBVel + ajuste);  // El ajuste porque los motores son distintos
+      analogWrite(PWMM2A, -mBVel);  // El ajuste porque los motores son distintos
       analogWrite(PWMM2B, 0);
   }
 }
