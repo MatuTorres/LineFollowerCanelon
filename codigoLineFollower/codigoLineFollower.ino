@@ -16,7 +16,7 @@
 #define errorCount 3 // Cantidad de errores para calcular promedio y eliminar ruido
 
 // Constantes de los motores y velocidades
-#define Vel 50 // Valor base para la velocidad del motor 
+#define Vel 71 // Valor base para la velocidad del motor 
 #define VelMin 0 // Valor minimo de velocidad
 #define VelMax 255 // Valor maximo de velocidad
 
@@ -38,9 +38,9 @@ double cumError = 0, rateError;
 double lastError = 0;
 
 // Parámetros del PID
-double Kp = 0.09; 
-double Ki = 0.001; 
-double Kd = 0.005;
+double Kp = 0.0401; 
+double Ki = 0.00145; 
+double Kd = 0.0018;
 
 // Variables para los botones
 int prevState = 0;
